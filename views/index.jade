@@ -1,0 +1,165 @@
+extends layout
+
+block content
+  h1 #{title}
+  p Welcome to #{title}
+  div.userLogin
+    div.container
+      div.form-signin
+        h2.form-signin-heading Please sign in
+        label(for="inputName").sr-only User name
+        input(type="text", autofocus, required, placeholder="User name")#inputName.form-control
+        button#loginButton.btn.btn-lg.btn-primary.btn-block Sign in
+  div.storyChooshing
+    h2 Choose a story
+    div.stories 
+      #stories_list.list-group
+  div.container-fluid
+    div.voting
+      div.row
+        #alert-message(role='alert').alert.alert-success.alert-dismissible
+          strong Vote received!
+      div.row
+        #card1.col-md-4.card 
+          img(src="/images/scrum_card_1.jpg").btn.img-responsive.center-block
+
+        #card2.col-md-4.card   
+          img(src="/images/scrum_card_2.jpg").btn.img-responsive.center-block
+
+        #card3.col-md-4.card   
+          img(src="/images/scrum_card_3.jpg").btn.img-responsive.center-block
+
+      div.row
+        #card4.col-md-4.card   
+          img(src="/images/scrum_card_4.jpg").btn.img-responsive.center-block
+
+        #card5.col-md-4.card   
+          img(src="/images/scrum_card_5.jpg").btn.img-responsive.center-block
+        
+        //- TODO: axis names
+        #votes.col-md-4 
+          //- p#votes_list #{JSON.stringify(votes.aggregated_votes)}
+          canvas#votingResults(width=200, height=300).img-responsive.center-block
+
+
+    //- TODO: extract all js to a separate js file
+    script.
+      var colours = ['rgba(242, 29, 67, 0.2)','rgba(255, 171, 60, 0.2)','rgba(196, 214, 74, 0.2)','rgba(0, 177, 113, 0.2)','rgba(25, 187, 174, 0.2)']
+      var socket = io();
+      var user = '';
+      var room = '';
+      var user_has_voted = false;
+      var vote = 0;
+      $(document).ready(function(){
+        //- console.log($('#ref1').text());
+        $("#alert-message").hide();
+        $(".storyChooshing").hide();
+        $(".voting").hide();
+        
+        socket.on('vote message', function(msg){
+          //- alert('message received: ' + JSON.stringify(msg));
+          //- $("#alert-message").alert();
+          //- //- window.setTimeout(function() { $("#alert-message").alert('close'); }, 2000);          
+          //- $("#alert-message").fadeTo(1000, 500).slideUp(500, function(){
+          //-   $("#alert-message").hide();
+          //- });
+          //- window.setTimeout(function () { $("#alert-message").hide(); }, 2000);
+          //- $('#votes_list').text(JSON.stringify(msg.aggregated_votes));
+          console.log('bars: ' + votingResultsChart.datasets[0].bars);
+          var highestBar = 0;
+          // TODO: use underscore
+          for(var key in msg) {
+            console.log('current key = ' + key);
+            console.log('current colour = ' + colours[key-1]);
+            votingResultsChart.datasets[0].bars[key-1].fillColor = colours[key-1];
+            votingResultsChart.datasets[0].bars[key-1].value = msg[key];
+            //- console.log('current value = ' + votingResultsChart.datasets[0].bars[key-1].value);
+            //- console.log('highestBar = ' + highestBar);
+            //- console.log('current value of highestBar = ' + votingResultsChart.datasets[0].bars[highestBar].value);
+            if (votingResultsChart.datasets[0].bars[key-1].value > votingResultsChart.datasets[0].bars[highestBar].value){
+              highestBar = key-1;
+            }
+          }
+          votingResultsChart.datasets[0].bars[highestBar].fillColor = colours[highestBar].replace('0.2', '1');
+          // Would update the first dataset's value of 'March' to be 50
+          votingResultsChart.update();
+          // Calling update now animates the position of March from 90 to 50.
+        });
+        
+        $('#loginButton').on('click', function(){
+          console.log('loginButton clicked with text: ' + $('#inputName').val());
+          socket.emit('login message', {name: $('#inputName').val() });
+        });
+        
+        socket.on('authorized message', function(){
+          user = $('#inputName').val();
+          $(".userLogin").hide();
+          socket.emit('give me available stories');
+        })
+        
+        socket.on('available stories', function(msg){
+          console.log('available stories: ' + JSON.stringify(msg));
+          msg.forEach(function(story) {
+            $("#stories_list").append('<button type="button" id="'+ story.name +'" class="list-group-item">'+ story.name +': '+ story.description +'</button>');
+          });
+          $('button.list-group-item').on('click', function (){
+            console.log('A story has been clicked');
+            $(".storyChooshing").hide();
+            $(".voting").show();
+            room = $(this).attr('id');
+            socket.emit('join room', room);
+            console.log('Joining room: ' + room);
+          });
+          $(".storyChooshing").show();
+        });
+        
+        socket.on('welcome to room', function(room){
+          console.log('room ' + room + ' joined');
+        });
+
+        $('div.card').on('click', function (){
+          $(this).addClass('highlight').siblings().removeClass('highlight');
+          $(this).blur();
+          var mes = {room: room, voterName: user, votedCardNumber: $(this).attr('id').slice(-1)};
+          if (!user_has_voted) {
+            socket.emit('vote message', mes);
+            console.log('vote emmited');
+          } else {
+            mes.oldVote = vote;
+            socket.emit('update message', mes);
+            console.log('vote updated');
+          } 
+          user_has_voted = true;
+          vote = mes.votedCardNumber;
+        });    
+
+      }); 
+      
+      var ctx = document.getElementById("votingResults").getContext("2d");
+      //- var myNewChart = new Chart(ctx).PolarArea(data);
+      var data = {
+        labels: ["1 h", "2 h", "4 h", "1 d", "1 w"],
+        datasets: [
+            {
+                label: "Voting results",
+                fillColor: "rgba(220,220,220,0.2)",
+                strokeColor: "rgba(220,220,220,1)",
+                pointColor: "rgba(220,220,220,1)",
+                pointStrokeColor: "#fff",
+                pointHighlightFill: "#fff",
+                pointHighlightStroke: "rgba(220,220,220,1)",
+                data: [0, 0, 0, 0, 0]
+            },
+        ]
+      };
+      var options = {
+        ///Boolean - Whether grid lines are shown across the chart
+        scaleShowGridLines : true,
+
+        //String - Colour of the grid lines
+        scaleGridLineColor : "rgba(0,0,0,.05)",
+
+        //Number - Width of the grid lines
+        scaleGridLineWidth : 1,
+      }
+      var votingResultsChart = new Chart(ctx).Bar(data, options);
