@@ -1,11 +1,29 @@
+'use strict';
+/* global require, console, module */
+
 var io = require('socket.io')();
-var votes = require('../models/vote');
-var users = require('../models/user');
-var stories = require('../models/story');
+var models = require('../models')();
+
+var votes;
+var users;
+var stories;
+
+models.then(function (models) {
+  console.log('models import finished with result: models = ' + JSON.stringify(models));
+  votes = models.Vote;
+  users = models.User;
+  stories = models.Story;
+
+  console.log('votes: ' + JSON.stringify(votes));
+  console.log('users: ' + JSON.stringify(users));
+  console.log('stories: ' + JSON.stringify(stories));
+
+});
+
+
 
 io.on('connection', function(socket){
   console.log('a user connected');
-  // socket.emit('vote message', votes);
 
   socket.on('disconnect', function(){
     console.log('user disconnected');
@@ -17,19 +35,14 @@ io.on('connection', function(socket){
     var existing_users_promise = users.getUsers();
     existing_users_promise.addBack(function (err, users) {
       if (err) return console.error(err);
-      // console.log('Users found: ' + users);
       existing_users = users;
-      // console.log('Users found pasted to existing_users: ' + existing_users);
       existing_users.forEach(function (user) {
-        // console.log('cheching user: ' + JSON.stringify(user));
         console.log('user.name = ' + user.name + ' and msg.name = ' +msg.name);
         if (user.name == msg.name){
-          // console.log('User found');
           socket.emit('authorized message');
         }
       });
     });
-    // console.log('Existing users: ' + existing_users);
   });
 
   socket.on('give me available stories', function (msg) {

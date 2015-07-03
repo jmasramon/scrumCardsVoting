@@ -1,46 +1,41 @@
-var mongoose = require('mongoose');
+'use strict';
+/* global module, console */
 
-// TODO: extract connection to common ground
-mongoose.connect('mongodb://localhost/test');
+module.exports = function (mongoose) {
+  console.log('user model imported with mongoose: ' + mongoose);
 
-var db = mongoose.connection;
+  var scrumUserSchema = mongoose.Schema({
+      name: String,
+  });
 
-db.on('error', console.error.bind(console, 'connection error:'));
+  var ScrumUser = mongoose.model('ScrumUser', scrumUserSchema);
 
-db.once('open', function (callback) {
-  console.log('mongodb connection opened');
-});
+  ScrumUser.remove({}, function (err, story) {
+    if (err) return console.error(err);
+  });
 
-var scrumUserSchema = mongoose.Schema({
-    name: String,
-});
+  var aUser = new ScrumUser({name:'Jordi'});
+  var anotherUser = new ScrumUser({name:'Marc'});
+  var moreUser = new ScrumUser({name:'Marta'});
 
-var ScrumUser = mongoose.model('ScrumUser', scrumUserSchema);
+  aUser.save(function (err, aUser) {
+    if (err) return console.error(err);
+  });
+  anotherUser.save(function (err, aUser) {
+    if (err) return console.error(err);
+  });
+  moreUser.save(function (err, aUser) {
+    if (err) return console.error(err);
+  });
 
-ScrumUser.remove({}, function (err, story) {
-  if (err) return console.error(err);
-});
+  var scrumUser = {
+    usersId: 29,
+    getUsers: function () {
+      // found_users = [];
+      return ScrumUser.find().exec();
+      // return found_users;
+    }
+  };
 
-var aUser = new ScrumUser({name:'Jordi'});
-var anotherUser = new ScrumUser({name:'Marc'});
-var moreUser = new ScrumUser({name:'Marta'});
-
-aUser.save(function (err, aUser) {
-  if (err) return console.error(err);
-});
-anotherUser.save(function (err, aUser) {
-  if (err) return console.error(err);
-});
-moreUser.save(function (err, aUser) {
-  if (err) return console.error(err);
-});
-
-var scrumUser = {
-  getUsers: function () {
-    // found_users = [];
-    return ScrumUser.find().exec();
-    // return found_users;
-  }
+  return scrumUser;
 };
-
-module.exports = scrumUser;

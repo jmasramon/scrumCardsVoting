@@ -1,8 +1,8 @@
 extends layout
 
 block content
-  h1 #{title}
-  p Welcome to #{title}
+  h1#title #{title}
+  p#subTitle Welcome to #{title}
   div.userLogin
     div.container
       div.form-signin
@@ -57,14 +57,6 @@ block content
         $(".voting").hide();
         
         socket.on('vote message', function(msg){
-          //- alert('message received: ' + JSON.stringify(msg));
-          //- $("#alert-message").alert();
-          //- //- window.setTimeout(function() { $("#alert-message").alert('close'); }, 2000);          
-          //- $("#alert-message").fadeTo(1000, 500).slideUp(500, function(){
-          //-   $("#alert-message").hide();
-          //- });
-          //- window.setTimeout(function () { $("#alert-message").hide(); }, 2000);
-          //- $('#votes_list').text(JSON.stringify(msg.aggregated_votes));
           console.log('bars: ' + votingResultsChart.datasets[0].bars);
           var highestBar = 0;
           // TODO: use underscore
@@ -73,17 +65,12 @@ block content
             console.log('current colour = ' + colours[key-1]);
             votingResultsChart.datasets[0].bars[key-1].fillColor = colours[key-1];
             votingResultsChart.datasets[0].bars[key-1].value = msg[key];
-            //- console.log('current value = ' + votingResultsChart.datasets[0].bars[key-1].value);
-            //- console.log('highestBar = ' + highestBar);
-            //- console.log('current value of highestBar = ' + votingResultsChart.datasets[0].bars[highestBar].value);
             if (votingResultsChart.datasets[0].bars[key-1].value > votingResultsChart.datasets[0].bars[highestBar].value){
               highestBar = key-1;
             }
           }
           votingResultsChart.datasets[0].bars[highestBar].fillColor = colours[highestBar].replace('0.2', '1');
-          // Would update the first dataset's value of 'March' to be 50
           votingResultsChart.update();
-          // Calling update now animates the position of March from 90 to 50.
         });
         
         $('#loginButton').on('click', function(){
@@ -136,7 +123,6 @@ block content
       }); 
       
       var ctx = document.getElementById("votingResults").getContext("2d");
-      //- var myNewChart = new Chart(ctx).PolarArea(data);
       var data = {
         labels: ["1 h", "2 h", "4 h", "1 d", "1 w"],
         datasets: [
@@ -153,13 +139,8 @@ block content
         ]
       };
       var options = {
-        ///Boolean - Whether grid lines are shown across the chart
         scaleShowGridLines : true,
-
-        //String - Colour of the grid lines
         scaleGridLineColor : "rgba(0,0,0,.05)",
-
-        //Number - Width of the grid lines
         scaleGridLineWidth : 1,
       }
       var votingResultsChart = new Chart(ctx).Bar(data, options);
