@@ -1,8 +1,8 @@
 extends layout
 
 block content
-  h1#title #{title}
-  p#subTitle Welcome to #{title}
+  h1#title.hidden-xs #{title}
+  p#subTitle.hidden-xs Welcome to #{title}
   div.userLogin
     div.container
       div.form-signin
@@ -20,26 +20,30 @@ block content
         #alert-message(role='alert').alert.alert-success.alert-dismissible
           strong Vote received!
       div.row
-        #card1.col-md-4.card 
+        #card1.col-lg-2.col-md-4.card.col-sm-4.col-xs-6
           img(src="/images/scrum_card_1.jpg").btn.img-responsive.center-block
 
-        #card2.col-md-4.card   
+        #card2.col-lg-2.col-md-4.card.col-sm-4.col-xs-6  
           img(src="/images/scrum_card_2.jpg").btn.img-responsive.center-block
 
-        #card3.col-md-4.card   
+        div.clearfix.visible-xs
+
+        #card3.col-lg-2.col-md-4.card.col-sm-4.col-xs-6   
           img(src="/images/scrum_card_3.jpg").btn.img-responsive.center-block
 
-      div.row
-        #card4.col-md-4.card   
+        div.clearfix.visible-md.visible-sm
+          
+        #card4.col-lg-2.col-md-4.card.col-sm-4.col-xs-6   
           img(src="/images/scrum_card_4.jpg").btn.img-responsive.center-block
 
-        #card5.col-md-4.card   
+        div.clearfix.visible-xs
+        
+        #card5.col-lg-2.col-md-4.card.col-sm-4.col-xs-6   
           img(src="/images/scrum_card_5.jpg").btn.img-responsive.center-block
         
         //- TODO: axis names
-        #votes.col-md-4 
-          //- p#votes_list #{JSON.stringify(votes.aggregated_votes)}
-          canvas#votingResults(width=200, height=300).img-responsive.center-block
+        #votes.col-lg-2.col-md-4.col-sm-4.col-xs-6
+          canvas#votingResults(width=157, height=238).img-responsive.center-block
 
 
     //- TODO: extract all js to a separate js file
