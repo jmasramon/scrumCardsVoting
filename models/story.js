@@ -2,8 +2,6 @@
 /* global require, console, module */
 
 module.exports = function (mongoose) {
-  console.log('story model imported with mongoose: ' + mongoose);
-
   var storySchema = mongoose.Schema({
       name: String,
       description: String

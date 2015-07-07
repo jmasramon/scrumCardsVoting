@@ -9,18 +9,11 @@ var users;
 var stories;
 
 models.then(function (models) {
-  console.log('models import finished with result: models = ' + JSON.stringify(models));
   votes = models.Vote;
   users = models.User;
   stories = models.Story;
 
-  console.log('votes: ' + JSON.stringify(votes));
-  console.log('users: ' + JSON.stringify(users));
-  console.log('stories: ' + JSON.stringify(stories));
-
 });
-
-
 
 io.on('connection', function(socket){
   console.log('a user connected');

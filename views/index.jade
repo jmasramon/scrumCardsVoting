@@ -1,8 +1,8 @@
 extends layout
 
 block content
-  h1#title.hidden-xs #{title}
-  p#subTitle.hidden-xs Welcome to #{title}
+  h1#title.hidden-xs= title
+  p#subTitle.hidden-xs= 'Welcome to ' + title
   div.userLogin
     div.container
       div.form-signin
@@ -20,131 +20,16 @@ block content
         #alert-message(role='alert').alert.alert-success.alert-dismissible
           strong Vote received!
       div.row
-        #card1.col-lg-2.col-md-4.card.col-sm-4.col-xs-6
-          img(src="/images/scrum_card_1.jpg").btn.img-responsive.center-block
+        - for item in lodash.range(1,6)
+          div(id="card"+item).col-lg-2.col-md-4.card.col-sm-4.col-xs-6
+            img(src="/images/scrum_card_"+item+".jpg").btn.img-responsive.center-block
+          - if (item == 2 || item == 4)
+            div.clearfix.visible-xs
+          - if (item == 3)
+            div.clearfix.visible-md.visible-sm
 
-        #card2.col-lg-2.col-md-4.card.col-sm-4.col-xs-6  
-          img(src="/images/scrum_card_2.jpg").btn.img-responsive.center-block
-
-        div.clearfix.visible-xs
-
-        #card3.col-lg-2.col-md-4.card.col-sm-4.col-xs-6   
-          img(src="/images/scrum_card_3.jpg").btn.img-responsive.center-block
-
-        div.clearfix.visible-md.visible-sm
-          
-        #card4.col-lg-2.col-md-4.card.col-sm-4.col-xs-6   
-          img(src="/images/scrum_card_4.jpg").btn.img-responsive.center-block
-
-        div.clearfix.visible-xs
-        
-        #card5.col-lg-2.col-md-4.card.col-sm-4.col-xs-6   
-          img(src="/images/scrum_card_5.jpg").btn.img-responsive.center-block
-        
         //- TODO: axis names
         #votes.col-lg-2.col-md-4.col-sm-4.col-xs-6
           canvas#votingResults(width=157, height=238).img-responsive.center-block
-
-
-    //- TODO: extract all js to a separate js file
-    script.
-      var colours = ['rgba(242, 29, 67, 0.2)','rgba(255, 171, 60, 0.2)','rgba(196, 214, 74, 0.2)','rgba(0, 177, 113, 0.2)','rgba(25, 187, 174, 0.2)']
-      var socket = io();
-      var user = '';
-      var room = '';
-      var user_has_voted = false;
-      var vote = 0;
-      $(document).ready(function(){
-        //- console.log($('#ref1').text());
-        $("#alert-message").hide();
-        $(".storyChooshing").hide();
-        $(".voting").hide();
-        
-        socket.on('vote message', function(msg){
-          console.log('bars: ' + votingResultsChart.datasets[0].bars);
-          var highestBar = 0;
-          // TODO: use underscore
-          for(var key in msg) {
-            console.log('current key = ' + key);
-            console.log('current colour = ' + colours[key-1]);
-            votingResultsChart.datasets[0].bars[key-1].fillColor = colours[key-1];
-            votingResultsChart.datasets[0].bars[key-1].value = msg[key];
-            if (votingResultsChart.datasets[0].bars[key-1].value > votingResultsChart.datasets[0].bars[highestBar].value){
-              highestBar = key-1;
-            }
-          }
-          votingResultsChart.datasets[0].bars[highestBar].fillColor = colours[highestBar].replace('0.2', '1');
-          votingResultsChart.update();
-        });
-        
-        $('#loginButton').on('click', function(){
-          console.log('loginButton clicked with text: ' + $('#inputName').val());
-          socket.emit('login message', {name: $('#inputName').val() });
-        });
-        
-        socket.on('authorized message', function(){
-          user = $('#inputName').val();
-          $(".userLogin").hide();
-          socket.emit('give me available stories');
-        })
-        
-        socket.on('available stories', function(msg){
-          console.log('available stories: ' + JSON.stringify(msg));
-          msg.forEach(function(story) {
-            $("#stories_list").append('<button type="button" id="'+ story.name +'" class="list-group-item">'+ story.name +': '+ story.description +'</button>');
-          });
-          $('button.list-group-item').on('click', function (){
-            console.log('A story has been clicked');
-            $(".storyChooshing").hide();
-            $(".voting").show();
-            room = $(this).attr('id');
-            socket.emit('join room', room);
-            console.log('Joining room: ' + room);
-          });
-          $(".storyChooshing").show();
-        });
-        
-        socket.on('welcome to room', function(room){
-          console.log('room ' + room + ' joined');
-        });
-
-        $('div.card').on('click', function (){
-          $(this).addClass('highlight').siblings().removeClass('highlight');
-          $(this).blur();
-          var mes = {room: room, voterName: user, votedCardNumber: $(this).attr('id').slice(-1)};
-          if (!user_has_voted) {
-            socket.emit('vote message', mes);
-            console.log('vote emmited');
-          } else {
-            mes.oldVote = vote;
-            socket.emit('update message', mes);
-            console.log('vote updated');
-          } 
-          user_has_voted = true;
-          vote = mes.votedCardNumber;
-        });    
-
-      }); 
-      
-      var ctx = document.getElementById("votingResults").getContext("2d");
-      var data = {
-        labels: ["1 h", "2 h", "4 h", "1 d", "1 w"],
-        datasets: [
-            {
-                label: "Voting results",
-                fillColor: "rgba(220,220,220,0.2)",
-                strokeColor: "rgba(220,220,220,1)",
-                pointColor: "rgba(220,220,220,1)",
-                pointStrokeColor: "#fff",
-                pointHighlightFill: "#fff",
-                pointHighlightStroke: "rgba(220,220,220,1)",
-                data: [0, 0, 0, 0, 0]
-            },
-        ]
-      };
-      var options = {
-        scaleShowGridLines : true,
-        scaleGridLineColor : "rgba(0,0,0,.05)",
-        scaleGridLineWidth : 1,
-      }
-      var votingResultsChart = new Chart(ctx).Bar(data, options);
+          
+  include logic

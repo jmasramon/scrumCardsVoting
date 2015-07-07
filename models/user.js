@@ -2,8 +2,6 @@
 /* global module, console */
 
 module.exports = function (mongoose) {
-  console.log('user model imported with mongoose: ' + mongoose);
-
   var scrumUserSchema = mongoose.Schema({
       name: String,
   });

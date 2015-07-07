@@ -1,9 +1,8 @@
 'use strict';
 /* global require, console, module */
+var _ = require('lodash');
 
 module.exports = function (mongoose) {
-  console.log('vote model imported with mongoose: ' + mongoose);
-
   var voteSchema = mongoose.Schema({
       room: String,
       voterName: String,
@@ -12,9 +11,9 @@ module.exports = function (mongoose) {
 
   var Vote = mongoose.model('Vote', voteSchema);
 
-  Vote.remove({}, function (err, aVote) {
-    if (err) return console.error(err);
-  });
+  // Vote.remove({}, function (err, aVote) {
+  //   if (err) return console.error(err);
+  // });
 
   // var aVote = new Vote({voterName:'Jordi', votedCardNumber: 1});
   // var anotherVote = new Vote({voterName:'Marc', votedCardNumber: 3});
@@ -33,7 +32,17 @@ module.exports = function (mongoose) {
 
   Vote.find(function (err, votes) {
     if (err) return console.error(err);
-    console.log('votes = ' +votes);
+
+    var votes_by_room = _.chain(votes).groupBy('room').map(function (room, room_name) {
+      return {room: room_name, votes:_.chain(room).countBy('votedCardNumber').value()};
+    }).value();
+
+    _.each(votes_by_room, function (elem, index) {
+      _.each(elem.votes, function (votes, vote_card) {
+        vote.aggregated_votes[elem.room][vote_card] = votes;
+      });
+    });
+
   });
 
   var vote = {
@@ -61,12 +70,10 @@ module.exports = function (mongoose) {
       }
     },
     addVote: function (vote) {
-      console.log('adding vote:' + JSON.stringify(vote));
       var newVote = new Vote(vote);
       newVote.save(function (err, aVote) {
         if (err) return console.error(err);
       });
-      console.log('updating aggregated_votes with: ' + vote.votedCardNumber);
       this.aggregated_votes[vote.room][vote.votedCardNumber]++;
     },
     // TODO: Use this. Prevent voting more than once
@@ -74,10 +81,9 @@ module.exports = function (mongoose) {
       Vote.update({room: vote.room, voterName: vote.voterName}, { $set: { votedCardNumber: vote.votedCardNumber }}, function (err, aVote) {
         if (err) return console.error(err);
       });
-      console.log('updating aggregated_votes with: ' + vote.votedCardNumber);
       this.aggregated_votes[vote.room][vote.oldVote]--;
       this.aggregated_votes[vote.room][vote.votedCardNumber]++;
-    }
+    },
   };
 
   return vote;
