@@ -45,26 +45,81 @@ describe("using wd and chai-as-promised", function() {
     browser
       .elementByCss('.form-signin-heading').text()
         .should.become('Please sign in')
-      .elementByCss('.sr-only').text()
-        .should.become('User name')
-        .elementById('inputName')
-          .should.eventually.exist
-          .elementById('loginButton')
-            .should.eventually.exist
+      .elementById('inputName')
+        .should.eventually.exist
+      .elementById('loginButton')
+        .should.eventually.exist
       .notify(done);
   });
 
   it('hides everything else', function (done) {
     browser
-      .getComputedCss('#alert-message', 'style')
-        .should.become('display: none;')
+      .elementById('storyChooshing')
+        .getAttribute('style')
+          .should.become('display: none;')
+      .elementById('voting')
+        .getAttribute('style')
+          .should.become('display: none;')
     .notify(done);
   });
 
-  // it('should allow login to registered users', function (done) {
+  it('should allow login to registered users', function (done) {
+    browser
+      .elementById('inputName')
+        .keys('Jordi')
+      .elementById('loginButton')
+        .click()
+      .elementById('userLogin')
+        .getAttribute('style')
+          .should.become('display: none;')
+      .elementById('storyChooshing')
+        .getAttribute('style')
+          .should.become('display: block;')
+    .notify(done);
+  });
+
+  it('should allow choosing a story', function (done) {
+    browser
+    .elementById('inputName')
+      .keys('Jordi')
+    .elementById('loginButton')
+      .click(function () {
+        browser
+        .elementById('Story 1')
+          .click()
+        .elementById('loginButton')
+          .click();
+      })
+      .elementById('userLogin')
+        .getAttribute('style')
+          .should.become('display: none;')
+      .elementById('storyChooshing')
+        .getAttribute('style')
+          .should.become('display: none;')
+      .elementById('voting')
+        .getAttribute('style')
+          .should.become('display: block;')
+      .notify(done);
+  });
+
+  // it('should allow voting for a story', function (done) {
   //   browser
-  //   .click()
-  //   .notify(done);
+  //   .elementById('inputName')
+  //     .keys('Jordi')
+  //   .elementById('loginButton')
+  //     .click(function () {
+  //       browser
+  //       .elementById('Story 1')
+  //         .click()
+  //       .elementById('loginButton')
+  //         .click();
+  //     })
+  //   .elementById('voting')
+  //     .should.eventually.include
+  //     .click()
+  //   // .elementById('votes')
+  //   //   should.become()
+  //   .done();
   // });
 
 });

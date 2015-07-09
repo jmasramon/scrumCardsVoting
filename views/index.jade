@@ -3,22 +3,18 @@ extends layout
 block content
   h1#title.hidden-xs= title
   p#subTitle.hidden-xs= 'Welcome to ' + title
-  div.userLogin
+  #userLogin
     div.container
       div.form-signin
         h2.form-signin-heading Please sign in
-        label(for="inputName").sr-only User name
         input(type="text", autofocus, required, placeholder="User name")#inputName.form-control
         button#loginButton.btn.btn-lg.btn-primary.btn-block Sign in
-  div.storyChooshing
+  #storyChooshing
     h2 Choose a story
     div.stories 
       #stories_list.list-group
-  div.container-fluid
+  #voting.container-fluid
     div.voting
-      div.row
-        #alert-message(role='alert').alert.alert-success.alert-dismissible
-          strong Vote received!
       div.row
         - for item in lodash.range(1,6)
           div(id="card"+item).col-lg-2.col-md-4.card.col-sm-4.col-xs-6

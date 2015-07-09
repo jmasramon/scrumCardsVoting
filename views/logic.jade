@@ -9,9 +9,8 @@
       var vote = 0;
 
       $(document).ready(function(){
-        $("#alert-message").hide();
-        $(".storyChooshing").hide();
-        $(".voting").hide();
+        $("#storyChooshing").hide();
+        $("#voting").hide();
 
         $('#loginButton').on('click', function(){
           socket.emit('login message', {name: $('#inputName').val() });
@@ -20,7 +19,7 @@
         socket.on('authorized message', function(){
           user = $('#inputName').val();
           $('#subTitle').text($('#subTitle').text() + ', Mr/Ms ' + user + '.' );
-          $(".userLogin").hide();
+          $("#userLogin").hide();
           socket.emit('give me available stories');
         })
 
@@ -29,7 +28,7 @@
           $('button.list-group-item').on('click', function (){
             enterTheStoryRoom(this);
           });
-          $(".storyChooshing").show();
+          $("#storyChooshing").show();
         });
         
         function createStoryList(stories){
@@ -39,8 +38,8 @@
         }
         
         function enterTheStoryRoom(clicked_story) {
-          $(".storyChooshing").hide();
-          $(".voting").show();
+          $("#storyChooshing").hide();
+          $("#voting").show();
           room = $(clicked_story).attr('id');
           socket.emit('join room', room);
         }
