@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.all('/', routes.index);
 app.all('/users/', routes.users);
-app.all('/stories/', routes.stories(stories));
+app.all('/stories/', routes.stories);
 
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

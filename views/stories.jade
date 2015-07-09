@@ -1,12 +1,90 @@
 extends layout
 
 block content
-  h1#title.hidden-xs= title
-  p#subTitle.hidden-xs= 'Welcome to ' + title
+  h1#title= title
+  p#subTitle= 'Curren stories:'
 
-  #storyList
-    - for story in stories
-      div(id="card"+item).col-lg-2.col-md-4.card.col-sm-4.col-xs-6
-        = 'Story name: ' + story.name + ', Story description' + story.description;
+  #managing
+    #storyList.list-group
+      = console.log(stories)
+      table#storiesTable.table.table-hover.table-striped.table-bordered
+        thead
+          tr
+            th Name
+            th Description
+        tbody
+          - for story in stories
+              tr(id="row_" + story.name.slice(0,5) + "_" + story.name.slice(-1))
+                td= story.name
+                td= story.description
+                td
+                  //- button#editStoryButton.btn.btn-default Edit Story
+                  span(id="editButton" + story.name.slice(-1), "desc"=story.description).glyphicon.glyphicon-edit
+                  &nbsp;&nbsp;
+                  span(id="deleteButton" + story.name.slice(-1)).glyphicon.glyphicon-remove-sign
+            //- = 'Story name: ' + story.name + ', Story description: ' + story.description
+          //- button#editStoryButton.btn.btn-default Edit Story
 
-  #newStory
+    #newStory
+      button#newStoryButton.btn.btn-default New Story
+
+  #storyEdit
+    div.container
+      div.form-signin
+        input(type="text", autofocus, required, placeholder="Story name")#storyName.form-control
+        input(type="text", autofocus, required, placeholder="Story description")#storyDescription.form-control
+        button#okButton.btn.btn-lg.btn-primary.btn-block Ok
+
+  script(type='text/javascript').
+    $("#storyEdit").hide();
+    var socket = io();
+    var action;
+
+    (function(){
+      $(document).ready(function(){
+        $('span.glyphicon-edit').on('click', function(){
+          console.log('editing Story ' + $(this).attr('id').slice(-1));
+          action = 'edit';
+          $('#storyName').val('Story ' + $(this).attr('id').slice(-1));
+          $('#storyDescription').val($(this).attr('desc'));
+          $("#managing").hide();
+          $("#storyEdit").show();
+        });
+        
+        $('span.glyphicon-remove-sign').on('click', function(){
+          console.log('removing Story ' + $(this).attr('id').slice(-1));
+          socket.emit('delete story', 'Story '+ $(this).attr('id').slice(-1));
+        });
+
+        $('#newStoryButton').on('click', function(){
+          console.log('new story');
+          action = 'new';
+          $("#managing").hide();
+          $("#storyEdit").show();
+        });
+
+        $('#okButton').on('click', function(){
+          console.log('Ok to Story ' + $('#storyName').val() + ' with description: ' + $('#storyDescription').val());
+          if(action == 'new') {
+            socket.emit('new story', {name: $('#storyName').val(), description:$('#storyDescription').val()})
+          }
+          if(action == 'edit') {
+            //- TODO: needs old name
+            socket.emit('edit story', {name: $('#storyName').val(), description:$('#storyDescription').val()})
+          }
+        });
+        
+        socket.on('story deleted', function(story){
+          console.log('story ' + story + ' deleted');
+          console.log('removing row: ' + "#row_" + story.slice(0,5) + "_" + story.slice(-1));
+          $("#row_" + story.slice(0,5) + "_" + story.slice(-1)).remove();
+        });
+
+        socket.on('story created', function(story){
+          console.log('story ' + story + ' created');
+          console.log('adding row: ' + "#row_" + story.slice(0,5) + "_" + story.slice(-1));
+          location.reload();
+        });
+
+      });
+    })();

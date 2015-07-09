@@ -1,11 +1,87 @@
 extends layout
 
 block content
-  h1#title.hidden-xs= title
-  p#subTitle.hidden-xs= 'Welcome to ' + title
-  
-  #userList
-    
-  #newUser
-    
+  h1#title= title
+  p#subTitle= 'Current users:'
+
+  #managing
+    #storyList.list-group
+      = console.log(users)
+      table.table.table-hover.table-striped.table-bordered
+        thead
+          tr
+            th Name
+            //- th Surename
+        tbody
+          - for user in users
+              tr(id="row" + user.name)
+                td= user.name
+                //- td= user.surename
+                td
+                  span(id="editButton_" + user.name).glyphicon.glyphicon-edit
+                  &nbsp;&nbsp;
+                  span(id="delButton__" + user.name).glyphicon.glyphicon-remove-sign
+
+    #newUser
+      button#newUserButton.btn.btn-default New User
+
+  #userEdit
+    div.container
+      div.form-signin
+        input(type="text", autofocus, required, placeholder="User name")#inputName.form-control
+        button#okButton.btn.btn-lg.btn-primary.btn-block Ok
+
+  script(type='text/javascript').
+    $("#userEdit").hide();
+    var socket = io();
+    var action;
+
+    (function(){
+      $(document).ready(function(){
+        $('span.glyphicon-edit').on('click', function(){
+          console.log('editing user ' + $(this).attr('id').slice(11));
+          action = 'edit';
+          $('#inputName').val($(this).attr('id').slice(11));
+          $("#managing").hide();
+          $("#userEdit").show();
+        });
+        
+        $('span.glyphicon-remove-sign').on('click', function(){
+          console.log('removing user ' + $(this).attr('id').slice(11));
+          socket.emit('delete user', $(this).attr('id').slice(11));
+        });
+
+        $('#newUserButton').on('click', function(){
+          console.log('new user');
+          action = 'new';
+          $("#managing").hide();
+          $("#userEdit").show();
+        });
+        
+        $('#okButton').on('click', function(){
+          console.log('Ok to user name: ' + $('#inputName').val());
+          if(action == 'new') {
+            socket.emit('new user', $('#inputName').val())
+          }
+          if(action == 'edit') {
+            //- TODO: needs old name
+            socket.emit('edit user', $('#inputName').val())
+          }
+        });
+        
+        socket.on('user deleted', function(user){
+          console.log('user ' + user + ' deleted');
+          console.log('removing row: ' + "#row" + user);
+          $("#row" + user).remove();
+        });
+
+        socket.on('user created', function(user){
+          console.log('user ' + user + ' created');
+          console.log('adding row: ' + "#row_" + user);
+          location.reload();
+        });
+
+      });
+    })();
+
   
