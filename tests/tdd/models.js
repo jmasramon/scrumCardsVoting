@@ -23,6 +23,16 @@ db.once('open', function (callback) {
 var User = require('../../models/user')(mongoose);
 var Story = require('../../models/story')(mongoose);
 var Vote = require('../../models/vote')(mongoose);
+resetVotes(mongoose);
+
+function resetVotes(mongoose) {
+  var Vote = mongoose.model('Vote');
+
+  Vote.remove({}, function (err, story) {
+    if (err) return console.error(err);
+  });
+
+}
 
 describe('Model tests', function () {
     beforeEach(function (done) {
